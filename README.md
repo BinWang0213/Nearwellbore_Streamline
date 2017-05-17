@@ -7,7 +7,7 @@ Bin Wang (binwang.0213@gmail.com), Yin Feng
 Department of Petroleum Engineering, Univeristy of Louisiana at Lafayette, Lafayette, US, 70506
 
 Corresponding author: Yin Feng, yin.feng@louisiana.edu
-
+![Image of Embedded Method](https://github.com/BinWang0213/Nearwellbore_Streamline/blob/master/images/Embedded_Field.png)
 
 
 Citation
