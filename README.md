@@ -14,6 +14,8 @@ This code includes following three algorithm to construct the streamlines within
 2. **Embedded Method** - The velocity field is solved using virtual-boundary-element method (VBEM) and streamlines are traced using numercial integertor.The detailed description can be found on SPE-182614-MS
 3. **Simple Fill-Grid Method** - The average time-of-flight (TOF) is estimated and no streamlines are explicited traced (Shahvali et al. 2012). 
 
+Here is a nicely formatted [ipython notebook version](https://github.com/BinWang0213/Nearwellbore_Streamline/blob/master/Example-QuickStart.ipynb) of running the algorithm with Case 3 in SPE-182614-MS. 
+
 Citation
 --------
 
