@@ -211,5 +211,10 @@ def LineSegIntersect(Line1=([0,0],[1,1]),Line2=([0,1],[1,0])):
     ccw_ABD=(yd-ya)*(xb-xa) > (yb-ya)*(xd-xa)
     return ccw_ACD != ccw_BCD and ccw_ABC != ccw_ABD
 
-
+############################### Fill-Grid Method #################################
+def PolygonArea(Pts):
+    #Calculate 2D polygon area using Shoelace formula
+    #http://stackoverflow.com/questions/24467972/calculate-area-of-polygon-given-x-y-coordinates/30408825
+    x,y=np.asarray(Pts)[:,0],np.asarray(Pts)[:,1]
+    return 0.5*np.abs(np.dot(x,np.roll(y,1))-np.dot(y,np.roll(x,1)))
 

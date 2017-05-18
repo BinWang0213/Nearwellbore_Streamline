@@ -173,7 +173,7 @@ class WellGrid:
         Pts Location Scheme example   
             1-----2 
             |     |             
-            | 4.. |             
+            | 1.. |             
             |     |             
             0-----3             
         Pts        OutFlow Edge
@@ -182,8 +182,8 @@ class WellGrid:
         2          2(2,3)
         3          3(3,0)
         Well
-        4
-        5
+        1
+        2
         ..
         Default Sequence in wellgrid: bottom(0)-left(1)-top(2)-right(3), clockwise
         
@@ -222,9 +222,9 @@ class WellGrid:
         self.TOF=[]
         
         #Additional Geometory variable
-        self.domain_min=(min(self.Pts_e)[0],min(self.Pts_e)[1])
-        self.domain_max=(max(self.Pts_e)[0],max(self.Pts_e)[1])
-   
+        self.domain_min=(min(np.asarray(self.Pts_e)[:,0]),min(np.asarray(self.Pts_e)[:,1]))
+        self.domain_max=(max(np.asarray(self.Pts_e)[:,0]),max(np.asarray(self.Pts_e)[:,1]))
+
     def Meshing(self):
         """Genetrating meshing for VBEM (virtual boundary elements, ghost node pairs and wells)
         Fig. 2 in in SPE-182614-MS
@@ -253,11 +253,11 @@ class WellGrid:
             Add_Well(self.Pts_w[i],self.rw,Qwell=self.Qw[i],wells=self.Wells)
         
         #Mesh Plot
-        error=R*0.8
+        error=R*0.2 #empty space around the circle VBEM
 
         plt.figure(figsize=(3, 3))
-        plt.axes().set(xlim=[self.domain_min[0]-error, self.domain_max[0]+error],
-                       ylim=[self.domain_min[1]-error, self.domain_max[1]+error],aspect='equal')
+        plt.axes().set(xlim=[Origin[0]-R-error, Origin[0]+R+error],
+                       ylim=[Origin[1]-R-error, Origin[1]+R+error],aspect='equal')
 
             #Domain boundary
         plt.plot(*np.asarray(self.Pts_e).T,lw=1,color='black')
@@ -358,16 +358,19 @@ class WellGrid:
         RHS_Neumann=np.zeros((self.Nbe))
         
         for i, Gho in enumerate(self.Ghos): #target ghost pairs nodes
+            tempRHS=0.0
             for j, Well in enumerate(self.Wells): #BE source
                 Pts_a=Gho.x_a,Gho.y_a
                 Pts_b=Gho.x_b,Gho.y_b
-                RHS_well[i]=(self.GHw_analytical(Pts_a,Well)[0]-self.GHw_analytical(Pts_b,Well)[0])*Well.Q
+                tempRHS=tempRHS+(self.GHw_analytical(Pts_a,Well)[0]-self.GHw_analytical(Pts_b,Well)[0])*Well.Q
+            RHS_well[i]=tempRHS
         for i in range(self.Ne):#Boundary conditions
             for j, Gho in enumerate(self.Ghos):#Corrsponding elements
                 if(Gho.marker==i):
                     #print(i,Gho.Qbd)
                     Lbd=CalcDist(self.Pts_e[i],self.Pts_e[i+1])
                     kbd=self.kx*abs(Gho.sinalpha)+self.ky*abs(Gho.cosalpha)
+                    if (self.kx==self.ky): kbd=self.kx
                     RHS_Neumann[j]=4*np.pi*Gho.Qbd*Gho.rab*np.sqrt(self.kx*self.ky)/Lbd/kbd
         RHS=-RHS_well-RHS_Neumann
         
@@ -409,8 +412,8 @@ class WellGrid:
         
         N = 30                  # number of points in the x and y directions
         error=1e-6
-        xmin,ymin=min(self.Pts_e)[0]+error,min(self.Pts_e)[1]+error
-        xmax,ymax=max(self.Pts_e)[0]-error,max(self.Pts_e)[1]-error
+        xmin,ymin=self.domain_min[0]+error,self.domain_min[1]+error
+        xmax,ymax=self.domain_max[0]-error,self.domain_max[1]-error
         X, Y = np.meshgrid(np.linspace(xmin, xmax, N), np.linspace(ymin, ymax, N))  # generates a mesh grid
         #Calculate the velocity and pressure field
         p = np.empty((N, N), dtype=float)
@@ -434,7 +437,7 @@ class WellGrid:
         fig, axes = plt.subplots(ncols=3,figsize=(10, 10))
         Vtotal= np.sqrt(u**2+v**2)
         if (vmax==100.01):
-            Vtotal_max=max(Vtotal.flatten())
+            Vtotal_max=np.nanmax(Vtotal.flatten())
         else:
             Vtotal_max=vmax
         from mpl_toolkits.axes_grid1 import make_axes_locatable
@@ -449,9 +452,13 @@ class WellGrid:
                 im=ax.contour(X, Y, Vtotal,level,linewidths=1.2)
             if i==1:
                 ax.set_title(r'Velocity Field')
-                im=ax.pcolormesh(X,Y,Vtotal,vmax=Vtotal_max)
+                #im=ax.pcolormesh(X,Y,Vtotal,vmax=Vtotal_max)
+                extent=(xmin,xmax,ymin,ymax)
+                im=ax.imshow(Vtotal,vmin=0,vmax=Vtotal_max,extent=extent,origin='lower',interpolation='nearest')
             if i==2:
                 import matplotlib.colors as colors
+                import warnings
+                warnings.filterwarnings('ignore') #hide the warnning when "nan" involves
                 ax.set_title(r'Streamline Preview')
                 level=colors.Normalize(vmin=0,vmax=Vtotal_max)
                 strm=ax.streamplot(X, Y, u, v,color=Vtotal,norm=level)
@@ -462,10 +469,11 @@ class WellGrid:
             fig.colorbar(im,cax=cax)  # draw colorbar
         
         fig.tight_layout()
+        plt.savefig('Field Plot.png',dpi=300)
         plt.show()
         return p,u,v
     
-    def RungeKutta(self,Pts1=(0,0),TOF1=0.0,dt=0.0003,method="RK2",tol=0.01):
+    def RungeKutta(self,Pts1=(0,0),TOF1=0.0,dt=0.0003,method="RK2",tol=0.05,debug=0):
         """Runge-kutta method for tracing streamline
            Method list:
            1. 2th order Runge-kutta method
@@ -518,8 +526,9 @@ class WellGrid:
         
         if (method=='Adaptive'):
             maxdist=enclose.make_circle(self.Pts_e)[1]*tol
-            t=0
+            t=0.0
             count=0
+            dt_sub=0.0
             #print('Start Point',Pts1)
             while (t<dt): #tracing streamline until it hit the boundary
                 puv=self.FieldSol(Pts1)
@@ -527,13 +536,16 @@ class WellGrid:
                 
                 V_Pts=np.sqrt(puv[1]**2+puv[2]**2)
                 dt_sub=maxdist/V_Pts
-                
                 Pts_adaptive=Pts1+np.multiply(Vx1,dt_sub)
+                #print('from',Pts1,'to',Pts_adaptive,'V',V_Pts,'dt',dt_sub,'t',t)
                 t=t+dt_sub
                 count=count+1
                 Pts1=Pts_adaptive
-            #print('Velocity',V_Pts,'MaximumDist',maxdist)
-            #print('EndPoint',Pts_adaptive,'sub-dt',dt_sub,'sub-steps',count)
+                if (count>30):
+                    #print('Diverging!')
+                    break
+            #print('Velocity',V_Pts,'MiniR',maxdist/tol,'MaximumDist',maxdist)
+            if (debug): print('EndPoint',Pts_adaptive,'sub-dt',dt_sub,'sub-steps',count)
             Pts=Pts_adaptive
             dt=t
         
@@ -542,12 +554,13 @@ class WellGrid:
             
         return Pts,TOF
             
-    def SLtrace(self,NSL=10,deltaT=0.1,method='adaptive',tol=0.05):
+    def SLtrace(self,NSL=10,deltaT=0.1,method='adaptive',tol=0.05,debug=0):
         """Trace Streamlines in the wellgrid using runge-kutta method
         Arguments
         ---------
         NSL        -- Total Number of Streamline
         NSL_w      -- Streamline number for each well
+        method     -- Numerical intergation method. RK2, RK4 and Adaptive are provided
 
         Output
         ---------
@@ -585,7 +598,7 @@ class WellGrid:
                 Pts0=self.SL[i][j]
                 TOF0=self.TOF[i][j]
                 
-                Pts1,TOF1=self.RungeKutta(Pts0,TOF0,dt=deltaT,method=method,tol=tol)
+                Pts1,TOF1=self.RungeKutta(Pts0,TOF0,dt=deltaT,method=method,tol=tol,debug=debug)
                 self.SL[i].append(Pts1)
                 self.TOF[i].append(TOF1)
             
@@ -601,7 +614,7 @@ class WellGrid:
                 if (flag==True):
                     TOF_end.append(TOF0)
                     SL_end.append(Pts0)
-                if j==60: break
+                #if j==10: break
         
         #Plot Streamline
         plt.figure(figsize=(3, 3))
