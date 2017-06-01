@@ -178,8 +178,8 @@ class Subgrid:
         if (self.Qb0>0.00001 and self.Qb1<-0.00001): CaseID_b=1
         if (self.Qa0<-0.00001 and self.Qa1>0.00001): CaseID_a=2
         if (self.Qb0<-0.00001 and self.Qb1>0.00001): CaseID_b=2
-        if (self.c1==0): CaseID_a=3
-        if (self.c2==0): CaseID_b=3
+        if (abs(self.c1)<0.00001): CaseID_a=3
+        if (abs(self.c2)<0.00001): CaseID_b=3
         if (abs(self.Qa0)<0.00001 and abs(self.Qa1)<0.00001): CaseID_a=4
         if (abs(self.Qb0)<0.00001 and abs(self.Qb1)<0.00001): CaseID_b=4
         
