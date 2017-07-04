@@ -278,18 +278,19 @@ class WellGrid:
 
     def GH_analytical(self,Pts=(0,0),BE=[]):
         '''Calclate BE influence coefficient for the pressure and normal flux
-           Eq. (6),(7),(8) in SPE-182614-MS
+           Eq. (5) (6),(7),(8) in SPE-182614-MS
         '''
         #Transfer global coordinate point(x,y) to local coordinate
-        x,y=Pts[0]-BE.xa,Pts[1]-BE.ya
+        x,y=Pts[0]-BE.xa,Pts[1]-BE.ya #Eq. A-1 in SPE-182614-MS
         L=BE.length
         kr=self.kx/self.ky
-        
+        unit_v=0.4468 #unit converstion factor
+
         a=BE.cosalpha**2+kr*BE.sinalpha**2
         b=x*BE.cosalpha+kr*BE.sinalpha*y
         c=y*BE.cosalpha-x*BE.sinalpha
         #dp=-70.6*self.miu/self.h/np.sqrt(self.kx*self.ky)
-        dv=-0.4468/self.h/self.phi*np.sqrt(kr)
+        dv=-unit_v/self.h/self.phi*np.sqrt(kr)  
         
         #print('xy',x,y)
         #print('abc',a,b,c)
@@ -332,8 +333,10 @@ class WellGrid:
         '''Calclate Well influence coefficient for the pressure and normal flux
            Eq. (9),(10),(11) in SPE-182614-MS
         '''
+        unit_v=0.8936 #0.8936 is unit converstion factor
+
         #dp=-70.6*self.miu/self.h/np.sqrt(self.kx*self.ky)
-        dv=0.8936/self.h/self.phi*np.sqrt(self.kx/self.ky)
+        dv=unit_v/self.h/self.phi*np.sqrt(self.kx/self.ky)
         
         Gij=np.log((Pts[0]-well.xw)**2+(self.kx/self.ky)*(Pts[1]-well.yw)**2)
         Hij_x=dv*(Pts[0]-well.xw)/((Pts[0]-well.xw)**2+(self.kx/self.ky)*(Pts[1]-well.yw)**2)
@@ -388,7 +391,9 @@ class WellGrid:
         '''Calculate the pressure and velocity at any point (x,y)
            Eq. (2) (3) and (4) in SPE-182614-MS
         '''
-        dp=-70.6*self.miu/self.h/np.sqrt(self.kx*self.ky)
+        unit_p=70.6 #unit converstion factor
+
+        dp=-unit_p*self.miu/self.h/np.sqrt(self.kx*self.ky)
         p=u=v=0.0
         for i,BE in enumerate(self.BEs):
                 puv=self.GH_analytical(Pts,BE)
