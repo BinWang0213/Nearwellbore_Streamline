@@ -122,15 +122,16 @@ class Subgrid:
         """Transform the pusedo time-of-flight(T) to physical time-of-flight(tau)
            Eq. 8.28 in Page 261 which vary with Jacobian. Analytical or numercial intergation required
         """
+        unit_Q=0.1781 #convert bbl to ft3
         alpha=Pts[0]
         Qa=self.LinearFlux(alpha)[0]
         
         if (self.c1!=0):
             tau_T=self.phi*(self.r**2)*self.h*np.sin(self.theta)*(alpha*T-Qa/self.c1*T+Qa/(self.c1**2)*np.exp(self.c1*T))
             tau_0=self.phi*(self.r**2)*self.h*np.sin(self.theta)*(Qa/(self.c1**2))
-            tau=(tau_T-tau_0)*0.1781
+            tau=(tau_T-tau_0)*unit_Q
         else:
-            tau=self.phi*(self.r**2)*self.h*np.sin(self.theta)*(alpha*T+Qa/2*T*T)*0.1781
+            tau=self.phi*(self.r**2)*self.h*np.sin(self.theta)*(alpha*T+Qa/2*T*T)*unit_Q
         
         return tau
         
