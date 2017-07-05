@@ -17,8 +17,10 @@ This code includes following three algorithm to construct the streamlines within
 Here is a nicely formatted [ipython notebook version](https://github.com/BinWang0213/Nearwellbore_Streamline/blob/master/Example-QuickStart.ipynb) of running the algorithm with Case 3 in SPE-182614-MS. 
 
 Reference:  
-[1] Datta-Gupta, A. and King, M.J., 2007. Streamline simulation: theory and practice. Textbook Series, SPE, Richardson, Texas 11.  
-[2] Natvig, J.R., Lie, K.A., Eikemo, B. and Berre, I., 2007. An efficient discontinuous Galerkin method for advective transport in porous media. Advances in water resources, 30(12), 2424-2438.  doi:10.1016/j.advwatres.2007.05.015  
+<sup><sub>  
+[1] Datta-Gupta, A. and King, M.J., 2007. Streamline simulation: theory and practice. Textbook Series, SPE, Richardson, Texas 11.    
+[2] Natvig, J.R., Lie, K.A., Eikemo, B. and Berre, I., 2007. An efficient discontinuous Galerkin method for advective transport in porous media. Advances in water resources, 30(12), 2424-2438.  doi:10.1016/j.advwatres.2007.05.015
+</sub></sup>
 
 Citation
 --------
