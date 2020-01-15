@@ -25,7 +25,7 @@ Reference:
 Citation
 --------
 
-Wang, B., Feng, Y., Du, J., et al. (2017) An Embedded Grid-Free Approach for Near Wellbore Streamline Simulation. doi:10.2118/SPE-182614-MS
+Wang, B., Feng, Y., Du, J., Wang, Y., Wang, S. and Yang, R., 2018. An embedded grid-free approach for near-wellbore streamline simulation. SPE Journal, 23(02), pp.567-588.
 
 License
 -------
